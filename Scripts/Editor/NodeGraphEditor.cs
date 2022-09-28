@@ -2,6 +2,9 @@
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+#if UNITY_2019_1_OR_NEWER && USE_ADVANCED_GENERIC_MENU
+using GenericMenu = XNodeEditor.AdvancedGenericMenu;
+#endif
 
 namespace XNodeEditor {
     /// <summary> Base class to derive custom Node Graph editors from. Use this to override how graphs are drawn in the editor. </summary>
@@ -54,6 +57,13 @@ namespace XNodeEditor {
                 return attrib.order;
             else
                 return 0;
+        }
+
+        /// <summary>
+        /// Called before connecting two ports in the graph view to see if the output port is compatible with the input port
+        /// </summary>
+        public virtual bool CanConnect(XNode.NodePort output, XNode.NodePort input) {
+            return output.CanConnectTo(input);
         }
 
         /// <summary>
@@ -222,7 +232,7 @@ namespace XNodeEditor {
             XNode.Node node = target.CopyNode(original);
             Undo.RegisterCreatedObjectUndo(node, "Duplicate Node");
             node.name = original.name;
-            AssetDatabase.AddObjectToAsset(node, target);
+            if (!string.IsNullOrEmpty(AssetDatabase.GetAssetPath(target))) AssetDatabase.AddObjectToAsset(node, target);
             if (NodeEditorPreferences.GetSettings().autoSave) AssetDatabase.SaveAssets();
             return node;
         }
