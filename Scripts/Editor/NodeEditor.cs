@@ -20,7 +20,19 @@ namespace XNodeEditor {
         public static Action<XNode.Node> onUpdateNode;
         public readonly static Dictionary<XNode.NodePort, Vector2> portPositions = new Dictionary<XNode.NodePort, Vector2>();
 
-        public static bool InNodeEditor { get;  protected internal set; }
+        private static int inNodeEditor = 0;
+        public static bool InNodeEditor { get { return inNodeEditor > 0; } }
+
+        public static void PushInNodeEditor()
+        {
+            inNodeEditor++;
+        }
+
+        public static void PopInNodeEditor()
+        {
+            Debug.Assert( inNodeEditor > 0, "InNodeEditor was not positive. Push/Pop mismatch." );
+            inNodeEditor--;
+        }
 
         public virtual void OnHeaderGUI() {
             GUILayout.Label(target.name, NodeEditorResources.styles.nodeHeader, GUILayout.Height(30));
@@ -35,7 +47,7 @@ namespace XNodeEditor {
 
         /// <summary> Draws standard field editors for all public fields </summary>
         public virtual void OnBodyGUI() {
-            InNodeEditor = true;
+            PushInNodeEditor();
 
 #if ODIN_INSPECTOR
             if (OdinInspectorHelper.EnableOdinNodeDrawer) {
@@ -83,7 +95,7 @@ namespace XNodeEditor {
                 serializedObject.ApplyModifiedProperties();
             }
 
-            InNodeEditor = false;
+            PopInNodeEditor();
         }
 
         public virtual int GetWidth() {

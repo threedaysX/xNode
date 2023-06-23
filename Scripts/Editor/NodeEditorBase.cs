@@ -35,10 +35,9 @@ namespace XNodeEditor.Internal {
 
 				if (this._objectTree == null) {
 					try {
-						bool wasInEditor = NodeEditor.InNodeEditor;
-						NodeEditor.InNodeEditor = true;
+                        NodeEditor.PushInNodeEditor();
 						this._objectTree = PropertyTree.Create(this.serializedObject);
-						NodeEditor.InNodeEditor = wasInEditor;
+                        NodeEditor.PopInNodeEditor();
 					} catch (ArgumentException ex) {
 						Debug.Log(ex);
 					}
