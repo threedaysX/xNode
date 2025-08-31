@@ -152,13 +152,29 @@ namespace XNode {
                     case "Microsoft":
                         continue;
                     default:
-                        nodeTypes.AddRange(assembly.GetTypes().Where(t => !t.IsAbstract && baseType.IsAssignableFrom(t)).ToArray());
+                        nodeTypes.AddRange(GetTypesSafely(assembly).Where(t => !t.IsAbstract && baseType.IsAssignableFrom(t)));
                         break;
                 }
             }
 
             for (int i = 0; i < nodeTypes.Count; i++) {
                 CachePorts(nodeTypes[i]);
+            }
+        }
+
+		private static IEnumerable<System.Type> GetTypesSafely(Assembly assembly)
+        {
+            try
+            {
+                return assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                return ex.Types.Where(t => t != null);
+            }
+            catch
+            {
+                return Enumerable.Empty<System.Type>();
             }
         }
 
